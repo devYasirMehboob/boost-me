@@ -2,9 +2,11 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Button } from 'react-native';
 import { useStore } from '@/store';
 import { theme } from '@/theme';
+import { useRouter } from 'expo-router';
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = () => {
     const { user, login, logout, isAuthenticated } = useStore();
+    const router = useRouter();
 
     useEffect(() => {
         // Example: Simulate fetching initial data
@@ -22,6 +24,13 @@ const HomeScreen = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Boost Me App</Text>
+            <View style={styles.backButtonContainer}>
+                <Button
+                    title="Back"
+                    onPress={() => router.replace('/onboarding')}
+                    color={theme.colors.primary}
+                />
+            </View>
             <View style={styles.card}>
                 <Text style={styles.text}>
                     Status: {isAuthenticated ? `Logged in as ${user?.name}` : 'Guest'}
@@ -46,6 +55,9 @@ const styles = StyleSheet.create({
     },
     title: {
         ...theme.typography.header,
+        marginBottom: theme.spacing.xl,
+    },
+    backButtonContainer: {
         marginBottom: theme.spacing.xl,
     },
     card: {

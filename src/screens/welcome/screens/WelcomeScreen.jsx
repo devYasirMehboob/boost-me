@@ -1,7 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, Dimensions, SafeAreaView } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, Image, Dimensions } from 'react-native';
 import WelcomeBackground from '../components/WelcomeBackground';
 import { StatusBar } from 'expo-status-bar';
+import { useRouter } from 'expo-router';
 
 const { width, height } = Dimensions.get('window');
 
@@ -18,7 +19,17 @@ const AVATARS = [
     { uri: 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=150', style: { bottom: height * 0.05, right: width * 0.1, width: 60, height: 60, borderColor: '#5E35B1' } },
 ];
 
-const WelcomeScreen = ({ navigation }) => {
+const WelcomeScreen = () => {
+    const router = useRouter();
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            router.replace('/onboarding');
+        }, 3000);
+
+        return () => clearTimeout(timer);
+    }, []);
+
     return (
         <View style={styles.container}>
             <StatusBar style="light" />
@@ -32,7 +43,7 @@ const WelcomeScreen = ({ navigation }) => {
             ))}
 
             {/* Content Layer (Clickable to start) */}
-            <View style={styles.content} onStartShouldSetResponder={() => true} onResponderRelease={() => navigation.navigate('Onboarding')}>
+            <View style={styles.content} onStartShouldSetResponder={() => true} onResponderRelease={() => router.replace('/onboarding')}>
                 <Text style={styles.title}>BoostMe</Text>
             </View>
         </View>

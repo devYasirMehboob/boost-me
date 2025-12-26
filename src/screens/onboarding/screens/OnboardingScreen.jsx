@@ -1,25 +1,29 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Image, Dimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
-// Screens
-import IllustrationImg from '../../../../assets/Illustration.png';
+import { useRouter } from 'expo-router';
+import IllustrationImg from '../../../assets/Illustration.png';
+import Button from '../../../components/Button';
 
 const { width, height } = Dimensions.get('window');
 
-const OnboardingScreen = ({ navigation }) => {
+const OnboardingScreen = () => {
+    const router = useRouter();
+
     return (
         <View style={styles.container}>
             <StatusBar style="light" />
 
             <SafeAreaView style={styles.safeArea}>
                 {/* Skip Button */}
-                <TouchableOpacity
-                    style={styles.skipButton}
-                    onPress={() => navigation.navigate('Home')}
-                >
-                    <Text style={styles.skipText}>Skip</Text>
-                </TouchableOpacity>
+                <View style={styles.skipButtonContainer}>
+                    <Button
+                        title="Skip"
+                        variant="text"
+                        onPress={() => router.replace('/home')}
+                    />
+                </View>
 
                 {/* Illustration with specific styles */}
                 <View style={styles.illustrationContainer}>
@@ -44,16 +48,17 @@ const OnboardingScreen = ({ navigation }) => {
 
                 {/* Footer Navigation */}
                 <View style={styles.footer}>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Text style={styles.footerText}>Back</Text>
-                    </TouchableOpacity>
+                    <Button
+                        title="Back"
+                        variant="text"
+                        onPress={() => router.replace('/')}
+                    />
 
-                    <TouchableOpacity
-                        style={styles.nextButton}
-                        onPress={() => navigation.navigate('Home')}
-                    >
-                        <Text style={styles.nextButtonText}>Next</Text>
-                    </TouchableOpacity>
+                    <Button
+                        title="Next"
+                        variant="primary"
+                        onPress={() => router.replace('/login')}
+                    />
                 </View>
             </SafeAreaView>
         </View>
@@ -69,14 +74,9 @@ const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
     },
-    skipButton: {
-        alignSelf: 'flex-end',
+    skipButtonContainer: {
+        alignItems: 'flex-end',
         padding: 10,
-    },
-    skipText: {
-        color: '#00D1FF',
-        fontSize: 16,
-        fontWeight: '600',
     },
     illustrationContainer: {
         flex: 1,
@@ -130,27 +130,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 20,
         paddingHorizontal: 10,
-    },
-    footerText: {
-        color: '#00D1FF',
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    nextButton: {
-        backgroundColor: '#00D1FF',
-        paddingVertical: 12,
-        paddingHorizontal: 40,
-        borderRadius: 12,
-        shadowColor: "#00D1FF",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 5,
-        elevation: 6,
-    },
-    nextButtonText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: 'bold',
     },
 });
 
