@@ -15,7 +15,8 @@
         "foregroundImage": "./src/assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.devyasirmehboob.boostme"
     },
     "web": {
       "favicon": "./src/assets/favicon.png"
@@ -34,6 +35,12 @@
         }
       ],
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "78dc2cfa-8d8a-458c-ae6d-4a4b58dc2f53"
+      }
+    }
   }
 }
