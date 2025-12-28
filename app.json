@@ -27,14 +27,11 @@
         {
           "backgroundColor": "#232323",
           "image": "./src/assets/splash-icon.png",
-          "dark": {
-            "image": "./src/assets/splash-icon-dark.png",
-            "backgroundColor": "#000000"
-          },
           "imageWidth": 200
         }
       ],
-      "expo-router"
+      "expo-router",
+      "expo-font"
     ],
     "extra": {
       "router": {},
