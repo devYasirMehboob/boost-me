@@ -2,10 +2,12 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, ImageBackground } from 'react-native';
 import { Ionicons, MaterialCommunityIcons, FontAwesome5, Fontisto } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 
 const { width, height } = Dimensions.get('window');
 
 const PostItem = ({ item }) => {
+    const router = useRouter();
     const insets = useSafeAreaInsets();
     const tabBarHeight = 70 + insets.bottom;
 
@@ -40,7 +42,10 @@ const PostItem = ({ item }) => {
                         <Text style={styles.actionText}>{item.comments}</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.actionItem}>
+                    <TouchableOpacity
+                        style={styles.actionItem}
+                        onPress={() => router.push('/boost')}
+                    >
                         <View style={styles.iconContainer}>
                             <MaterialCommunityIcons name="airplane" size={32} color="white" style={{ transform: [{ rotate: '-45deg' }] }} />
                         </View>
@@ -102,7 +107,7 @@ const styles = StyleSheet.create({
     videoPlaceholder: {
         flex: 1,
         width: '100%',
-        height: '100%',
+        height: '277',
     },
     centerPlayContainer: {
         position: 'absolute',
