@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     videoPlaceholder: {
         flex: 1,
         width: '100%',
-        height: '277',
+        height: '100%',
     },
     centerPlayContainer: {
         position: 'absolute',
