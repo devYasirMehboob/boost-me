@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, Platform, KeyboardAvoidingView, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Platform, KeyboardAvoidingView, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -12,6 +12,9 @@ import Button from '@/components/Button';
 import SocialButton from '@/components/SocialButton';
 import WelcomeBackground from '@/screens/welcome/components/WelcomeBackground';
 import SuccessModal from '@/components/SuccessModal';
+
+// Services
+import authService from '@/services/authService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -41,14 +44,44 @@ const LoginScreen = () => {
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleLogin = () => {
-        // Implement login logic here later
-        setShowSuccess(true);
-        setTimeout(() => {
-            setShowSuccess(false);
-            router.replace('/home');
-        }, 2000);
+    const handleLogin = async () => {
+        // Basic Form Validation
+        if (!email.trim() || !password) {
+            Alert.alert('Error', 'Please enter both email and password');
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            Alert.alert('Error', 'Please enter a valid email address');
+            return;
+        }
+
+        setIsLoading(true);
+        console.log('[LOGIN] Attempting login for:', email);
+
+        const result = await authService.login({
+            email,
+            password
+        });
+
+        console.log('[LOGIN] [RESULT]:', result);
+
+        setIsLoading(false);
+
+        if (result.success) {
+            console.log('[LOGIN] [SUCCESS] Redirecting to home...');
+            setShowSuccess(true);
+            setTimeout(() => {
+                setShowSuccess(false);
+                router.replace('/home');
+            }, 2000);
+        } else {
+            console.error('[LOGIN] [ERROR] Message:', result.message);
+            Alert.alert('Login Failed', result.message);
+        }
     };
 
     return (
@@ -118,9 +151,10 @@ const LoginScreen = () => {
                             </View>
 
                             <Button
-                                title="Login"
+                                title={isLoading ? "Logging in..." : "Login"}
                                 variant="primary"
                                 onPress={handleLogin}
+                                disabled={isLoading}
                                 style={styles.loginButton}
                             />
                         </View>

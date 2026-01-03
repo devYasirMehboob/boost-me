@@ -4,7 +4,7 @@
     "slug": "boost-me",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src/assets/app_icon.jpg",
+    "icon": "./src/assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
@@ -12,14 +12,14 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./src/assets/app_icon.jpg",
+        "foregroundImage": "./src/assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.devyasirmehboob.boostme"
     },
     "web": {
-      "favicon": "./src/assets/app_icon.jpg"
+      "favicon": "./src/assets/favicon.png"
     },
     "plugins": [
       [

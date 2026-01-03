@@ -3,6 +3,11 @@ import { View, Text, StyleSheet, Dimensions, ScrollView, TouchableOpacity, SafeA
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import { Alert, ActivityIndicator } from 'react-native';
+
+// Services
+import uploadService from '@/services/uploadService';
+import videoService from '@/services/videoService';
 
 const { width } = Dimensions.get('window');
 
@@ -19,6 +24,7 @@ const UploadScreen = () => {
     const [thumbnails, setThumbnails] = useState(INITIAL_THUMBNAILS);
     const [tags, setTags] = useState(INITIAL_TAGS);
     const [selectedVideo, setSelectedVideo] = useState(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     const pickVideo = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -49,6 +55,74 @@ const UploadScreen = () => {
         const newTags = [...tags];
         newTags.splice(index, 1);
         setTags(newTags);
+    };
+
+    const handlePublish = async () => {
+        if (!selectedVideo) {
+            Alert.alert('Error', 'Please select a video to upload');
+            return;
+        }
+
+        if (!caption.trim()) {
+            Alert.alert('Error', 'Please add a caption');
+            return;
+        }
+
+        setIsUploading(true);
+        console.log('[UPLOAD] Starting upload process for:', selectedVideo);
+
+        try {
+            // 1. Request Presigned URL
+            const fileName = selectedVideo.split('/').pop();
+            const fileType = 'video/mp4'; // Defaulting to mp4 for now
+
+            console.log('[API] [UPLOAD] Requesting presigned URL...');
+            const urlResult = await uploadService.requestUploadUrl({
+                fileName,
+                contentType: fileType,
+            });
+
+            if (!urlResult.success) {
+                throw new Error(urlResult.message || 'Failed to get upload URL');
+            }
+
+            const { uploadUrl, key } = urlResult.data;
+            console.log('[API] [UPLOAD] [SUCCESS] Received key:', key);
+
+            // 2. Upload to S3
+            console.log('[API] [UPLOAD] Uploading file to S3...');
+            const s3Result = await uploadService.uploadToS3(uploadUrl, selectedVideo, fileType);
+
+            if (!s3Result.success) {
+                throw new Error('Failed to upload video to storage');
+            }
+            console.log('[API] [UPLOAD] [SUCCESS] File uploaded to S3');
+
+            // 3. Create Video Record in Database
+            console.log('[API] [UPLOAD] Creating video record in database...');
+            const videoResult = await videoService.createVideo({
+                title: caption.substring(0, 50),
+                description: caption,
+                videoUrl: `https://boost-me-bucket.s3.amazonaws.com/${key}`, // Placeholder S3 URL logic
+                rawVideoKey: key,
+                tags: tags,
+            });
+
+            if (!videoResult.success) {
+                throw new Error(videoResult.message || 'Failed to create video record');
+            }
+
+            console.log('[UPLOAD] [COMPLETE] Video published successfully ID:', videoResult.data._id);
+            Alert.alert('Success', 'Your video has been published!', [
+                { text: 'OK', onPress: () => router.replace('/home') }
+            ]);
+
+        } catch (error) {
+            console.error('[UPLOAD] [ERROR]:', error.message);
+            Alert.alert('Upload Failed', error.message);
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     return (
@@ -140,8 +214,17 @@ const UploadScreen = () => {
 
             {/* Bottom Button Fixed at bottom of screen (not scroll) to match standard UI patterns or layout depending on scroll intent */}
             <View style={styles.footer}>
-                <TouchableOpacity style={styles.publishButton} activeOpacity={0.8}>
-                    <Text style={styles.publishButtonText}>Publish</Text>
+                <TouchableOpacity
+                    style={[styles.publishButton, isUploading && { opacity: 0.7 }]}
+                    activeOpacity={0.8}
+                    onPress={handlePublish}
+                    disabled={isUploading}
+                >
+                    {isUploading ? (
+                        <ActivityIndicator color="#FFFFFF" />
+                    ) : (
+                        <Text style={styles.publishButtonText}>Publish</Text>
+                    )}
                 </TouchableOpacity>
             </View>
         </View>

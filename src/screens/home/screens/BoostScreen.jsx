@@ -4,6 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Alert, ActivityIndicator } from 'react-native';
+
+// Services
+import paymentService from '@/services/paymentService';
 
 const { width } = Dimensions.get('window');
 
@@ -16,7 +20,85 @@ const BOOST_OPTIONS = [
 
 const BoostScreen = () => {
     const router = useRouter();
-    const [selectedId, setSelectedId] = useState(1);
+    const [selectedId, setSelectedId] = useState(null);
+    const [boostOptions, setBoostOptions] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isFetching, setIsFetching] = useState(true);
+
+    const fetchConfig = async () => {
+        setIsFetching(true);
+        console.log('[API] [BOOST] Fetching boost configuration...');
+        const result = await paymentService.getBoostConfig();
+        console.log('[API] [BOOST] [RESULT]:', result);
+
+        if (result.success && result.data.options) {
+            setBoostOptions(result.data.options);
+            if (result.data.options.length > 0) {
+                setSelectedId(result.data.options[0].id);
+            }
+        } else {
+            // Fallback to initial options if API fails or for demo
+            setBoostOptions([
+                { id: 1, range: '£1 -> £100', price: '£5', views: '+200 views' },
+                { id: 2, range: '£1 -> £100', price: '£10', views: '+500 views' },
+                { id: 3, range: '£1 -> £100', price: '£25', views: '+1,500 views' },
+                { id: 4, range: '£1 -> £100', price: '£50', views: '+3,200 views' },
+            ]);
+            setSelectedId(1);
+        }
+        setIsFetching(false);
+    };
+
+    React.useEffect(() => {
+        fetchConfig();
+    }, []);
+
+    const handleConfirmBoost = async () => {
+        if (!selectedId) return;
+
+        const selectedOption = boostOptions.find(o => o.id === selectedId);
+        const amount = parseInt(selectedOption.price.replace('£', ''));
+
+        setIsLoading(true);
+        console.log(`[BOOST] Initiating boost for amount: £${amount}`);
+
+        try {
+            // 1. Create Payment Intent
+            console.log('[API] [PAYMENT] Creating payment intent...');
+            const intentResult = await paymentService.createPaymentIntent(amount);
+
+            if (!intentResult.success) {
+                throw new Error(intentResult.message || 'Failed to create payment intent');
+            }
+
+            console.log('[API] [PAYMENT] [SUCCESS] Intent received');
+
+            // 2. Simulate Stripe Payment (as per standard flow)
+            console.log('[STRIPE] Simulating payment success...');
+
+            // 3. Confirm Boost with API
+            console.log('[API] [BOOST] Confirming boost on backend...');
+            const boostResult = await paymentService.boostVideo({
+                paymentIntentId: 'pi_test_123', // Simulation
+                videoId: 'test_video_123' // Simulation
+            });
+
+            if (!boostResult.success) {
+                throw new Error(boostResult.message || 'Failed to confirm boost');
+            }
+
+            console.log('[BOOST] [COMPLETE] Success!');
+            Alert.alert('Success', 'Video boosted successfully!', [
+                { text: 'OK', onPress: () => router.back() }
+            ]);
+
+        } catch (error) {
+            console.error('[BOOST] [ERROR]:', error.message);
+            Alert.alert('Boost Failed', error.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <LinearGradient
@@ -63,40 +145,55 @@ const BoostScreen = () => {
 
                     {/* Boost Options Grid */}
                     <View style={styles.grid}>
-                        {BOOST_OPTIONS.map((option) => (
-                            <TouchableOpacity
-                                key={option.id}
-                                style={[
-                                    styles.card,
-                                    selectedId === option.id && styles.cardSelected
-                                ]}
-                                onPress={() => setSelectedId(option.id)}
-                                activeOpacity={0.8}
-                            >
-                                <View style={[styles.rangeBadge, selectedId === option.id ? styles.rangeBadgeSelected : styles.rangeBadgeUnselected]}>
-                                    <Text style={[styles.rangeText, selectedId === option.id ? styles.rangeTextSelected : styles.rangeTextUnselected]}>{option.range}</Text>
-                                </View>
-
-                                <View style={styles.cardHeader}>
-                                    <Text style={styles.priceText}>{option.price}</Text>
-                                    <View style={[styles.checkbox, selectedId === option.id && styles.checkboxSelected]}>
-                                        {selectedId === option.id && <Ionicons name="checkmark" size={12} color="white" />}
+                        {isFetching ? (
+                            <View style={{ width: '100%', height: 200, justifyContent: 'center' }}>
+                                <ActivityIndicator color="#00D1FF" />
+                            </View>
+                        ) : (
+                            boostOptions.map((option) => (
+                                <TouchableOpacity
+                                    key={option.id}
+                                    style={[
+                                        styles.card,
+                                        selectedId === option.id && styles.cardSelected
+                                    ]}
+                                    onPress={() => setSelectedId(option.id)}
+                                    activeOpacity={0.8}
+                                >
+                                    <View style={[styles.rangeBadge, selectedId === option.id ? styles.rangeBadgeSelected : styles.rangeBadgeUnselected]}>
+                                        <Text style={[styles.rangeText, selectedId === option.id ? styles.rangeTextSelected : styles.rangeTextUnselected]}>{option.range}</Text>
                                     </View>
-                                </View>
 
-                                <Text style={styles.benefitsTitle}>Benefits :</Text>
-                                <View style={styles.benefitRow}>
-                                    <MaterialCommunityIcons name="check" size={18} color="white" />
-                                    <Text style={styles.benefitText}>{option.views}</Text>
-                                </View>
-                            </TouchableOpacity>
-                        ))}
+                                    <View style={styles.cardHeader}>
+                                        <Text style={styles.priceText}>{option.price}</Text>
+                                        <View style={[styles.checkbox, selectedId === option.id && styles.checkboxSelected]}>
+                                            {selectedId === option.id && <Ionicons name="checkmark" size={12} color="white" />}
+                                        </View>
+                                    </View>
+
+                                    <Text style={styles.benefitsTitle}>Benefits :</Text>
+                                    <View style={styles.benefitRow}>
+                                        <MaterialCommunityIcons name="check" size={18} color="white" />
+                                        <Text style={styles.benefitText}>{option.views}</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            ))
+                        )}
                     </View>
 
                     {/* Bottom Button */}
                     <View style={styles.footer}>
-                        <TouchableOpacity style={styles.confirmButton} activeOpacity={0.8}>
-                            <Text style={styles.confirmButtonText}>Confirm Boost</Text>
+                        <TouchableOpacity
+                            style={[styles.confirmButton, isLoading && { opacity: 0.7 }]}
+                            activeOpacity={0.8}
+                            onPress={handleConfirmBoost}
+                            disabled={isLoading || isFetching}
+                        >
+                            {isLoading ? (
+                                <ActivityIndicator color="#FFFFFF" />
+                            ) : (
+                                <Text style={styles.confirmButtonText}>Confirm Boost</Text>
+                            )}
                         </TouchableOpacity>
                     </View>
                 </ScrollView>

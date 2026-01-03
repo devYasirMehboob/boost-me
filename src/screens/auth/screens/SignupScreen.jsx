@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, Platform, KeyboardAvoidingView, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Platform, KeyboardAvoidingView, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -10,6 +10,9 @@ import Button from '@/components/Button';
 import SocialButton from '@/components/SocialButton';
 import WelcomeBackground from '@/screens/welcome/components/WelcomeBackground';
 import SuccessModal from '@/components/SuccessModal';
+
+// Services
+import authService from '@/services/authService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -28,14 +31,63 @@ const SignupScreen = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showSuccess, setShowSuccess] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSignup = () => {
-        // Implement signup logic here later
-        setShowSuccess(true);
-        setTimeout(() => {
-            setShowSuccess(false);
-            router.replace('/home');
-        }, 2000);
+    const handleSignup = async () => {
+        // Basic Form Validation
+        if (!name.trim() || !email.trim() || !password || !confirmPassword) {
+            Alert.alert('Error', 'Please fill in all fields');
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            Alert.alert('Error', 'Please enter a valid email address');
+            return;
+        }
+
+        if (password.length < 6) {
+            Alert.alert('Error', 'Password must be at least 6 characters long');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            Alert.alert('Error', 'Passwords do not match');
+            return;
+        }
+
+        setIsLoading(true);
+
+        // Split name into firstName and lastName as required by API
+        const nameParts = name.trim().split(' ');
+        const firstName = nameParts[0];
+        const lastName = nameParts.slice(1).join(' ') || '';
+
+        console.log('Attempting signup with:', { email, firstName, lastName });
+
+        const result = await authService.register({
+            email,
+            password,
+            firstName,
+            lastName
+        });
+
+        console.log('Signup result:', result);
+
+        setIsLoading(false);
+
+        if (result.success) {
+            console.log('Signup successful!');
+            setShowSuccess(true);
+            setTimeout(() => {
+                setShowSuccess(false);
+                router.replace('/home');
+            }, 2000);
+        } else {
+            console.error('Signup failed with message:', result.message);
+            if (result.errors) console.error('Validation errors:', result.errors);
+            Alert.alert('Registration Failed', result.message);
+        }
     };
 
     return (
@@ -102,9 +154,10 @@ const SignupScreen = () => {
                             />
 
                             <Button
-                                title="Sign Up"
+                                title={isLoading ? "Creating Account..." : "Sign Up"}
                                 variant="primary"
                                 onPress={handleSignup}
+                                disabled={isLoading}
                                 style={styles.signupButton}
                             />
                         </View>

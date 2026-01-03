@@ -4,12 +4,26 @@ import { Ionicons, MaterialCommunityIcons, FontAwesome5, Fontisto } from '@expo/
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
+// Services
+import rewardService from '@/services/rewardService';
+
 const { width, height } = Dimensions.get('window');
 
 const PostItem = ({ item }) => {
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const tabBarHeight = 70 + insets.bottom;
+
+    React.useEffect(() => {
+        // Simulate a watch event after the video has been viewed for 5 seconds
+        const timer = setTimeout(async () => {
+            console.log(`[REWARDS] Recording watch for video: ${item.id}`);
+            const result = await rewardService.recordWatch(item.id, 5);
+            console.log('[REWARDS] [RESULT]:', result);
+        }, 5000);
+
+        return () => clearTimeout(timer);
+    }, [item.id]);
 
     return (
         <View style={styles.container}>

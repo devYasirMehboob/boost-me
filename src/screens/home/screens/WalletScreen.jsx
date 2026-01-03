@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, ScrollView, TouchableOpacity, SafeAreaView, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, ScrollView, TouchableOpacity, SafeAreaView, Platform, StatusBar, RefreshControl, ActivityIndicator } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import CustomTabBar from '@/components/CustomTabBar';
+
+// Services
+import walletService from '@/services/walletService';
+import rewardService from '@/services/rewardService';
 
 const { width } = Dimensions.get('window');
 
@@ -19,13 +22,81 @@ const WalletScreen = () => {
     const [showBalance, setShowBalance] = useState(true);
     const [showAllTransactions, setShowAllTransactions] = useState(false);
 
-    const displayedTransactions = showAllTransactions ? TRANSACTIONS : TRANSACTIONS.slice(0, 3);
+    const [balance, setBalance] = useState('0.00');
+    const [points, setPoints] = useState('0');
+    const [transactions, setTransactions] = useState([]);
+    const [earnings, setEarnings] = useState({ week: '0.00', total: '0.00' });
+    const [isLoading, setIsLoading] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    const fetchData = async (refresh = false) => {
+        if (refresh) setIsRefreshing(true);
+        else setIsLoading(true);
+
+        console.log('[API] [WALLET] Fetching wallet and reward data...');
+
+        try {
+            const [balanceRes, transactionsRes, earningsRes] = await Promise.all([
+                rewardService.getMyBalance(),
+                walletService.getMyTransactions(),
+                walletService.getMyEarnings()
+            ]);
+
+            console.log('[API] [WALLET] [RESULT] Balance:', balanceRes);
+            console.log('[API] [WALLET] [RESULT] Transactions:', transactionsRes);
+
+            if (balanceRes.success) {
+                setBalance(balanceRes.data.totalBalance?.toString() || '0.00');
+                setPoints(balanceRes.data.points?.toString() || '0');
+            }
+
+            if (transactionsRes.success) {
+                const mapped = transactionsRes.data.map(tx => ({
+                    id: tx._id,
+                    title: tx.description || 'Transaction',
+                    time: new Date(tx.createdAt).toLocaleString(),
+                    amount: `${tx.type === 'credit' ? '+' : '-'}£${tx.amount}`,
+                    type: tx.type === 'credit' ? 'positive' : 'negative'
+                }));
+                setTransactions(mapped);
+            }
+
+            if (earningsRes.success) {
+                setEarnings({
+                    week: earningsRes.data.weekEarnings?.toString() || '0.00',
+                    total: earningsRes.data.totalEarnings?.toString() || '0.00'
+                });
+            }
+
+        } catch (error) {
+            console.error('[WALLET] [ERROR]:', error);
+        }
+
+        setIsLoading(false);
+        setIsRefreshing(false);
+    };
+
+    React.useEffect(() => {
+        fetchData();
+    }, []);
+
+    const displayedTransactions = showAllTransactions ? transactions : transactions.slice(0, 3);
 
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" />
             <SafeAreaView style={styles.safeArea}>
-                <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                <ScrollView
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={isRefreshing}
+                            onRefresh={() => fetchData(true)}
+                            tintColor="#00D1FF"
+                        />
+                    }
+                >
                     {/* Header */}
                     <View style={styles.header}>
                         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -51,12 +122,12 @@ const WalletScreen = () => {
                                     </TouchableOpacity>
                                 </View>
                                 <Text style={styles.balanceAmount}>
-                                    {showBalance ? "£124.50" : "••••••"}
+                                    {showBalance ? `£${balance}` : "••••••"}
                                 </Text>
                             </View>
                             <TouchableOpacity style={styles.pointsBadge}>
                                 <Ionicons name="settings" size={14} color="#00D1FF" />
-                                <Text style={styles.pointsText}>200.756</Text>
+                                <Text style={styles.pointsText}>{points}</Text>
                             </TouchableOpacity>
                         </View>
 
@@ -107,7 +178,7 @@ const WalletScreen = () => {
                                 </TouchableOpacity>
                             </View>
                             <Text style={styles.summaryLabel}>This week</Text>
-                            <Text style={styles.summaryValue}>£27.10</Text>
+                            <Text style={styles.summaryValue}>£{earnings.week}</Text>
                         </View>
 
                         <View style={styles.summaryCard}>
@@ -120,7 +191,7 @@ const WalletScreen = () => {
                                 </TouchableOpacity>
                             </View>
                             <Text style={styles.summaryLabel}>Total</Text>
-                            <Text style={styles.summaryValue}>£312.78</Text>
+                            <Text style={styles.summaryValue}>£{earnings.total}</Text>
                         </View>
                     </View>
 
