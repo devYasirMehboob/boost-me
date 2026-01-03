@@ -24,13 +24,13 @@ const BoostScreen = () => {
             style={styles.container}
         >
             <SafeAreaView style={styles.safeArea}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                        <Ionicons name="chevron-back" size={32} color="white" />
-                    </TouchableOpacity>
-                </View>
-
                 <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                    <View style={styles.header}>
+                        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                            <Ionicons name="chevron-back" size={32} color="white" />
+                        </TouchableOpacity>
+                    </View>
+
                     {/* Video Thumbnail Card */}
                     <View style={styles.thumbnailContainer}>
                         <Image
@@ -92,14 +92,14 @@ const BoostScreen = () => {
                             </TouchableOpacity>
                         ))}
                     </View>
-                </ScrollView>
 
-                {/* Bottom Button */}
-                <View style={styles.footer}>
-                    <TouchableOpacity style={styles.confirmButton} activeOpacity={0.8}>
-                        <Text style={styles.confirmButtonText}>Confirm Boost</Text>
-                    </TouchableOpacity>
-                </View>
+                    {/* Bottom Button */}
+                    <View style={styles.footer}>
+                        <TouchableOpacity style={styles.confirmButton} activeOpacity={0.8}>
+                            <Text style={styles.confirmButtonText}>Confirm Boost</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
             </SafeAreaView>
         </LinearGradient>
     );
@@ -113,8 +113,8 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     header: {
-        paddingHorizontal: 20,
         height: 40,
+        marginBottom: 10,
     },
     backButton: {
         width: 40,
@@ -277,12 +277,9 @@ const styles = StyleSheet.create({
         fontFamily: 'Urbanist',
     },
     footer: {
-        position: 'absolute',
-        bottom: 0,
         width: '100%',
-        padding: 20,
-        // backgroundColor: '#020404',
-        paddingBottom: 30,
+        marginTop: 10,
+        marginBottom: 30,
     },
     confirmButton: {
         backgroundColor: '#00D1FF',

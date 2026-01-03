@@ -41,26 +41,21 @@ const SignupScreen = () => {
     return (
         <View style={styles.container}>
             <StatusBar style="light" />
-            <WelcomeBackground />
-            <SuccessModal
-                visible={showSuccess}
-                title="Account Created!"
-                message="Your account has been successfully created. Welcome aboard!"
-            />
-
-            {/* Avatars Layer */}
-            {AVATARS.map((avatar, index) => (
-                <View key={index} style={[styles.avatarContainer, avatar.style]}>
-                    <Image source={{ uri: avatar.uri }} style={styles.avatar} />
-                </View>
-            ))}
-
             <SafeAreaView style={styles.safeArea}>
                 <KeyboardAvoidingView
-                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                     style={styles.keyboardAvoidingView}
                 >
                     <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                        <View style={StyleSheet.absoluteFill}>
+                            <WelcomeBackground />
+                            {/* Avatars Layer */}
+                            {AVATARS.map((avatar, index) => (
+                                <View key={index} style={[styles.avatarContainer, avatar.style]}>
+                                    <Image source={{ uri: avatar.uri }} style={styles.avatar} />
+                                </View>
+                            ))}
+                        </View>
                         {/* Back Button */}
                         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
                             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
@@ -138,8 +133,13 @@ const SignupScreen = () => {
                         </View>
                     </ScrollView>
                 </KeyboardAvoidingView>
-            </SafeAreaView>
-        </View>
+            </SafeAreaView >
+            <SuccessModal
+                visible={showSuccess}
+                title="Account Created!"
+                message="Your account has been successfully created. Welcome aboard!"
+            />
+        </View >
     );
 };
 

@@ -17,10 +17,22 @@ const { width, height } = Dimensions.get('window');
 
 // Pexels placeholders for avatars (Subset for Login Screen - Top/Sides only)
 const AVATARS = [
-    { uri: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150', style: { top: height * 0.12, left: width * 0.1, width: 60, height: 60, borderColor: '#1F2E35' } },
-    { uri: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150', style: { top: height * 0.0, right: width * 0.2, width: 60, height: 60, borderColor: '#1F2E35' } },
-    { uri: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150', style: { top: height * 0.15, right: width * -0.08, width: 60, height: 60, borderColor: '#1F2E35' } },
-    { uri: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=150', style: { top: height * 0.17, right: width * 0.3, width: 60, height: 60, borderColor: '#D32F2F' } },
+    {
+        uri: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150',
+        style: { top: height * 0.12, left: width * 0.1, width: 60, height: 60, borderColor: '#1F2E35' }
+    },
+    {
+        uri: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150',
+        style: { top: height * 0.0, right: width * 0.2, width: 60, height: 60, borderColor: '#1F2E35' }
+    },
+    {
+        uri: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150',
+        style: { top: height * 0.15, right: width * -0.08, width: 60, height: 60, borderColor: '#1F2E35' }
+    },
+    {
+        uri: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=150',
+        style: { top: height * 0.17, right: width * 0.3, width: 60, height: 60, borderColor: '#D32F2F' }
+    },
 ];
 
 const LoginScreen = () => {
@@ -42,26 +54,21 @@ const LoginScreen = () => {
     return (
         <View style={styles.container}>
             <StatusBar style="light" />
-            <WelcomeBackground />
-            <SuccessModal
-                visible={showSuccess}
-                title="Welcome Back!"
-                message="You have successfully logged in to your account."
-            />
-
-            {/* Avatars Layer */}
-            {AVATARS.map((avatar, index) => (
-                <View key={index} style={[styles.avatarContainer, avatar.style]}>
-                    <Image source={{ uri: avatar.uri }} style={styles.avatar} />
-                </View>
-            ))}
-
             <SafeAreaView style={styles.safeArea}>
                 <KeyboardAvoidingView
-                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                     style={styles.keyboardAvoidingView}
                 >
                     <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                        <View style={StyleSheet.absoluteFill}>
+                            <WelcomeBackground />
+                            {/* Avatars Layer */}
+                            {AVATARS.map((avatar, index) => (
+                                <View key={index} style={[styles.avatarContainer, avatar.style]}>
+                                    <Image source={{ uri: avatar.uri }} style={styles.avatar} />
+                                </View>
+                            ))}
+                        </View>
                         {/* Back Button */}
                         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
                             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
@@ -142,8 +149,13 @@ const LoginScreen = () => {
                         </View>
                     </ScrollView>
                 </KeyboardAvoidingView>
-            </SafeAreaView>
-        </View>
+            </SafeAreaView >
+            <SuccessModal
+                visible={showSuccess}
+                title="Welcome Back!"
+                message="You have successfully logged in to your account."
+            />
+        </View >
     );
 };
 

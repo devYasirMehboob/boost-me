@@ -3,11 +3,14 @@ import { View, TouchableOpacity, StyleSheet, Dimensions, Platform } from 'react-
 import Svg, { Path } from 'react-native-svg';
 import { Ionicons, MaterialCommunityIcons, } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter, usePathname } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
 const CustomTabBar = () => {
     const insets = useSafeAreaInsets();
+    const router = useRouter();
+    const pathname = usePathname();
 
     // Smooth curve path (Refined for circular dip)
     const barHeight = 30;
@@ -35,8 +38,12 @@ const CustomTabBar = () => {
             </View>
 
             <View style={[styles.content, { paddingBottom: insets.bottom }]}>
-                <TouchableOpacity style={styles.tabItem}>
-                    <MaterialCommunityIcons name="home-variant-outline" size={28} color="#00D1FF" />
+                <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/home')}>
+                    <MaterialCommunityIcons
+                        name="home-variant-outline"
+                        size={28}
+                        color={pathname === '/home' ? "#00D1FF" : "#7A7A7A"}
+                    />
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.tabItem}>
@@ -45,12 +52,20 @@ const CustomTabBar = () => {
 
                 <View style={styles.centerSpace} />
 
-                <TouchableOpacity style={styles.tabItem}>
-                    <MaterialCommunityIcons name="wallet-outline" size={26} color="#7A7A7A" />
+                <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/wallet')}>
+                    <MaterialCommunityIcons
+                        name="wallet-outline"
+                        size={26}
+                        color={pathname === '/wallet' ? "#00D1FF" : "#7A7A7A"}
+                    />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.tabItem}>
-                    <Ionicons name="person-circle-outline" size={28} color="#7A7A7A" />
+                <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/profile')}>
+                    <Ionicons
+                        name="person-circle-outline"
+                        size={28}
+                        color={pathname === '/profile' ? "#00D1FF" : "#7A7A7A"}
+                    />
                 </TouchableOpacity>
             </View>
 
@@ -58,6 +73,7 @@ const CustomTabBar = () => {
             <TouchableOpacity
                 style={[styles.centerButton, { bottom: insets.bottom + 15 }]}
                 activeOpacity={0.8}
+                onPress={() => router.push('/upload')}
             >
                 <View style={styles.centerButtonInner}>
                     <MaterialCommunityIcons name="file-upload" size={28} color="#FFFFFF" />
